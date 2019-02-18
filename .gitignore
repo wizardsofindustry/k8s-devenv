@@ -1,0 +1,4 @@
+.vagrant/
+var/
+pki/k8s-*
+kubectl.yml
