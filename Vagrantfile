@@ -17,25 +17,22 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/xenial64"
 
-  #config.vm.define "k8s" do |k8s|
-  #  k8s.vm.provision "shell",
-  #    path: "provision-ca.sh",
-  #    env: {"PKI_DIR" => "/etc/pki"}
-  #  k8s.vm.network "private_network", ip: "10.17.1.10"
-  #  k8s.vm.network "forwarded_port", guest: 8001, host: 8001
-  #  k8s.vm.provision "shell",
-  #    path: "provision-ca.sh",
-  #    env: {
-  #      "PKI_DIR" => "/etc/pki",
-  #      "DEBIAN_FRONTEND" => "noninteractive"
-  #    }
-  #  k8s.vm.provision 'shell', path: "provision.sh"
-  #  k8s.vm.synced_folder "pki", "/etc/pki"
-  #  k8s.vm.provider "virtualbox" do |v|
-  #    v.memory = 4096
-  #    v.cpus = 4
-  #  end
-  #end
+  config.vm.define "k8s" do |k8s|
+    k8s.vm.network "private_network", ip: "10.17.1.10"
+    k8s.vm.network "forwarded_port", guest: 8001, host: 8001
+    k8s.vm.provision "shell",
+      path: "etc/common/provision-ca.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+    k8s.vm.provision 'shell', path: "etc/k8s/provision.sh"
+    k8s.vm.synced_folder "pki", "/etc/pki"
+    k8s.vm.provider "virtualbox" do |v|
+      v.memory = 4096
+      v.cpus = 4
+    end
+  end
 
   config.vm.define "artifacts" do |artifacts|
     artifacts.vm.network "private_network", ip: "10.17.3.10"
