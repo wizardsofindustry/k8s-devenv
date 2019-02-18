@@ -2,6 +2,8 @@
 # vi: set ft=ruby :
 system 'mkdir', '-p', 'var/ci/jenkins'
 system 'mkdir', '-p', 'var/ci/gitlab'
+system 'mkdir', '-p', 'var/rdbms/mysql'
+system 'mkdir', '-p', 'var/rdbms/postgres'
 system 'mkdir', '-p', 'etc/ci/gitlab'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -66,6 +68,21 @@ Vagrant.configure("2") do |config|
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
   # config.vm.box_check_update = false
+
+  config.vm.define "rdbms" do |rdbms|
+    rdbms.vm.network "private_network", ip: "10.17.4.10"
+    rdbms.vm.network "private_network", ip: "10.17.4.11"
+    rdbms.vm.network "private_network", ip: "10.17.4.12"
+    rdbms.vm.synced_folder "pki", "/etc/pki"
+    rdbms.vm.synced_folder "etc/rdbms/mysql", "/etc/mysql/conf.d"
+    rdbms.vm.provision 'shell', path: "etc/common/provision-docker.sh"
+    rdbms.vm.provision "shell",
+      path: "etc/common/provision-ca.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+  end
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,

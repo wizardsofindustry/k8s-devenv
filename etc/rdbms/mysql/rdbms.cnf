@@ -1,0 +1,6 @@
+[mysqld]
+bind-address=0.0.0.0
+ssl-ca="/etc/pki/quantum.crt"
+ssl-cert="/etc/pki/rdbms.crt"
+ssl-key="/etc/pki/rdbms.rsa"
+require_secure_transport=ON

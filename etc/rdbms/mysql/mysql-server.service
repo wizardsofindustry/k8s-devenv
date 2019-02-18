@@ -1,0 +1,17 @@
+[Unit]
+Description=MySQL Server
+
+[Service]
+ExecStart=/usr/bin/docker run\
+  -v /var/lib/mysql:/var/lib/mysql\
+  -v /etc/mysql/conf.d:/etc/mysql/conf.d:ro\
+  -v /etc/pki:/etc/pki:ro\
+  -p 3306:3306\
+  -e MYSQL_ROOT_PASSWORD=quantum\
+  -e MYSQL_USER=quantum\
+  -e MYSQL_PASSWORD=quantum\
+  -e MYSQL_DATABASE=quantum\
+  mysql:5.7
+
+[Install]
+WantedBy=multi-user.target
