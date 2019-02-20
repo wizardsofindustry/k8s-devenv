@@ -30,6 +30,7 @@ Vagrant.configure("2") do |config|
       }
     k8s.vm.provision 'shell', path: "etc/k8s/provision.sh"
     k8s.vm.synced_folder "pki", "/etc/pki"
+    k8s.vm.synced_folder File.expand_path("~/.kube"), "/root/.kube"
     k8s.vm.provider "virtualbox" do |v|
       v.memory = 4096
       v.cpus = 4
