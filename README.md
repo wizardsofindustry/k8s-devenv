@@ -3,7 +3,7 @@
 There are two machines defined in the `Vagrantfile`:
 
 - **k8s**: after provisioning this machine, you may visit the Kubernetes management
-  dashboard at the following URL: http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/job?namespace=default
+  dashboard at the following URL: https://k8s.local.quantumframework.org.
 - **artifacts**: after running `vagrant up` and provisioning completes, you are
   able to push a Docker image to `docker.local.quantumframework.org`
 
