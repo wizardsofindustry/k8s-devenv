@@ -59,19 +59,26 @@ if ! command -v kubectl >/dev/null; then
 fi
 if ! kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
       get pods --all-namespaces | grep dashboard; then
+  kubectl create secret tls x509.tls.org.quantumframework.local\
+    -n kube-system\
+    --key $CERTS_DIR/key.pem\
+    --cert $CERTS_DIR/crt.pem
+  kubectl create secret tls x509.tls.org.quantumframework.local.k8s\
+    -n kube-system\
+    --key $CERTS_DIR/k8s.rsa\
+    --cert $CERTS_DIR/k8s.crt
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/dashboard.yml
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/dashboard-admin.yml
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
+    create -f $CONFIG_DIR/dashboard-ingress.yml
+  kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/user.yml
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/namespaces.yml
-  kubectl create secret tls x509.tls.org.quantumframework.local\
-    -n kube-system\
-    --key $CERTS_DIR/key.pem\
-    --cert $CERTS_DIR/crt.pem
 fi
+export KUBECONFIG=/usr/local/etc/kube_config_cluster.yml
 secret=$(kubectl -n kube-system get secret -n kube-system | grep $K8SUSER | awk '{print $1}')
 user_token=$(kubectl get secret -n kube-system $secret -o json | jq -r '.data["token"]' | base64 -d)
 ctx=`kubectl config current-context`
@@ -81,18 +88,19 @@ kubectl get secret -n kube-system $secret -o json | jq -r '.data["ca.crt"]' | ba
 echo $user_token > $OUTPUT_DIR/token.txt
 
 # Create a new kubectl config file for the host machine.
+unset KUBECONFIG
 cd /vagrant && rm -rf kubectl.yml
-export KUBECONFIG="kubectl.yml"
-kubectl config set-cluster cluster-local \
+K8S_CTX=_quantum-local
+kubectl config set-cluster $K8S_CTX \
   --embed-certs=true \
   --server=http://$endpoint \
   --certificate-authority=$OUTPUT_DIR/pki/k8s-cluster.crt
-kubectl config set-credentials $K8SUSER-local --token=$user_token
-kubectl config set-context cluster-local \
-  --cluster=cluster-local \
-  --user=$K8SUSER-local \
+kubectl config set-credentials $K8S_CTX --token=$user_token
+kubectl config set-context $K8S_CTX \
+  --cluster=$K8S_CTX \
+  --user=$K8S_CTX \
   --namespace=default
-kubectl config use-context cluster-local
+kubectl config use-context $K8S_CTX
 
 
 # Install the kubectl-proxy service to it always runs.

@@ -11,7 +11,7 @@ spec:
   tls:
   - hosts:
     - k8s.local.quantumframework.org
-    secretName: x509.tls.org.quantumframework.local
+    secretName: x509.tls.org.quantumframework.local.k8s
   rules:
   - host: k8s.local.quantumframework.org
     http:
