@@ -47,6 +47,7 @@ if [ ! -e "/usr/local/etc/kube_config_cluster.yml" ]; then
 fi
 
 # Ensure that kubectl is installed
+export KUBECONFIG=/usr/local/etc/kube_config_cluster.yml
 if ! command -v kubectl >/dev/null; then
   mkdir -p /usr/local/bin
   mkdir -p /home/ubuntu/.kube /root/.kube
@@ -54,7 +55,6 @@ if ! command -v kubectl >/dev/null; then
   snap install kubectl --classic
   ln -svf /snap/bin/kubectl /usr/local/bin/kubectl
   ln -svf /usr/local/etc/kube_config_cluster.yml /home/ubuntu/.kube/config
-  ln -svf /usr/local/etc/kube_config_cluster.yml /root/.kube/config
   apt install -y jq
 fi
 if ! kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
@@ -78,7 +78,6 @@ if ! kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/namespaces.yml
 fi
-export KUBECONFIG=/usr/local/etc/kube_config_cluster.yml
 secret=$(kubectl -n kube-system get secret -n kube-system | grep $K8SUSER | awk '{print $1}')
 user_token=$(kubectl get secret -n kube-system $secret -o json | jq -r '.data["token"]' | base64 -d)
 ctx=`kubectl config current-context`
@@ -114,22 +113,22 @@ fi
 # Extract the client certificates from the local kubeconfig
 # file, so it may be used by other nodes to connect to the
 # Kubernetes cluster.
-cat /usr/local/etc/kube_config_cluster.yml |\
-  yaml2json - |\
-  jq '.users[0].user["client-key-data"]' |\
-  sed 's/^"\(.*\)"$/\1/' |\
-  base64 -d >\
-  $OUTPUT_DIR/pki/k8s-client.key
+#cat /usr/local/etc/kube_config_cluster.yml |\
+#  yaml2json - |\
+#  jq '.users[0].user["client-key-data"]' |\
+#  sed 's/^"\(.*\)"$/\1/' |\
+#  base64 -d >\
+#  $OUTPUT_DIR/pki/k8s-client.key
+#
+#cat /usr/local/etc/kube_config_cluster.yml |\
+#  yaml2json - |\
+#  jq '.users[0].user["client-certificate-data"]' |\
+#  sed 's/^"\(.*\)"$/\1/' |\
+#  base64 -d >\
+#  $OUTPUT_DIR/pki/k8s-client.crt
 
-cat /usr/local/etc/kube_config_cluster.yml |\
-  yaml2json - |\
-  jq '.users[0].user["client-certificate-data"]' |\
-  sed 's/^"\(.*\)"$/\1/' |\
-  base64 -d >\
-  $OUTPUT_DIR/pki/k8s-client.crt
-
-openssl pkcs12 -export -clcerts\
-  -inkey $OUTPUT_DIR/pki/k8s-client.key\
-  -in $OUTPUT_DIR/pki/k8s-client.crt\
-  -out $OUTPUT_DIR/pki/k8s-client.p12\
-  -password pass:quantum
+#openssl pkcs12 -export -clcerts\
+#  -inkey $OUTPUT_DIR/pki/k8s-client.key\
+#  -in $OUTPUT_DIR/pki/k8s-client.crt\
+#  -out $OUTPUT_DIR/pki/k8s-client.p12\
+#  -password pass:quantum
