@@ -77,6 +77,8 @@ if ! kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/user.yml
   kubectl --kubeconfig /usr/local/etc/kube_config_cluster.yml \
     create -f $CONFIG_DIR/namespaces.yml
+  kubectl create namespace cicd
+  kubectl create namespace cicd-ephemeral
 fi
 secret=$(kubectl -n kube-system get secret -n kube-system | grep $K8SUSER | awk '{print $1}')
 user_token=$(kubectl get secret -n kube-system $secret -o json | jq -r '.data["token"]' | base64 -d)
@@ -132,3 +134,20 @@ fi
 #  -in $OUTPUT_DIR/pki/k8s-client.crt\
 #  -out $OUTPUT_DIR/pki/k8s-client.p12\
 #  -password pass:quantum
+
+# Create a Kubernetes secret that the Jenkins master
+# may use to access slaves.
+if [ ! -e "$CERTS_DIR/jenkins" ]; then
+  ssh-keygen -t rsa -f $CERTS_DIR/jenkins -q -P ""
+  kubectl create secret generic -n cicd jenkins.secrets.ssh-slave\
+    --from-file=privateKey=$CERTS_DIR/jenkins\
+    --from-literal=username=jenkins
+  kubectl label secret -n cicd jenkins.secrets.ssh-slave\
+    jenkins.io/credentials-type=basicSSHUserPrivateKey
+  kubectl annotate secret -n cicd jenkins.secrets.ssh-slave\
+    jenkins.io/credentials-description="Private key for SSH Slaves"
+fi
+
+
+# Configure the cluster for local usage.
+kubectl apply -f /vagrant/etc/ci/jenkins/k8s.yml

@@ -40,6 +40,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "artifacts" do |artifacts|
     artifacts.vm.network "private_network", ip: "10.17.3.10"
+    artifacts.vm.network :forwarded_port, guest: 22, host: 3001
     artifacts.vm.synced_folder "pki", "/etc/pki"
     artifacts.vm.provision 'shell', path: "etc/common/provision-docker.sh"
     artifacts.vm.provision "shell",
@@ -78,6 +79,42 @@ Vagrant.configure("2") do |config|
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
   # config.vm.box_check_update = false
+
+  config.vm.define "slave1" do |slave1|
+    slave1.vm.network "private_network", ip: "10.17.2.20"
+    slave1.vm.synced_folder "pki", "/etc/pki"
+    slave1.vm.provision "shell",
+      path: "etc/common/provision-ca.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+    slave1.vm.provision "shell",
+      path: "etc/ci/slave/provision.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "CONFIG_DIR" => "/vagrant/etc/rdbms/mysql",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+  end
+
+  config.vm.define "slave2" do |slave2|
+    slave2.vm.network "private_network", ip: "10.17.2.21"
+    slave2.vm.synced_folder "pki", "/etc/pki"
+    slave2.vm.provision "shell",
+      path: "etc/common/provision-ca.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+    slave2.vm.provision "shell",
+      path: "etc/ci/slave/provision.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "CONFIG_DIR" => "/vagrant/etc/rdbms/mysql",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+  end
 
   config.vm.define "rdbms" do |rdbms|
     rdbms.vm.network "private_network", ip: "10.17.4.10"
