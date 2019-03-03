@@ -1,0 +1,8 @@
+[Unit]
+Description=Jenkins
+
+[Service]
+ExecStart=/usr/bin/docker run -p 8080:8080 -p 50000:50000 -v /etc/pki:/etc/pki:ro -v /var/lib/jenkins:/var/jenkins_home -e "JAVA_OPTS=-Djava.awt.headless=true" quantumframework/jenkins
+
+[Install]
+WantedBy=multi-user.target
