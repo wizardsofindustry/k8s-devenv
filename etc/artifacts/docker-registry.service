@@ -3,6 +3,7 @@ Description=Jenkins
 
 [Service]
 ExecStartPre=/bin/mkdir -p /var/lib/registry
+ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/docker run -v /etc/pki:/certs:ro -e REGISTRY_HTTP_ADDR=0.0.0.0:443 -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/crt.pem -e REGISTRY_HTTP_TLS_KEY=/certs/key.pem -p 443:443 -v /var/lib/registry:/var/lib/registry registry:2
 
 [Install]
