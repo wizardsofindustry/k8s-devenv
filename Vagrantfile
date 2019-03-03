@@ -32,9 +32,10 @@ Vagrant.configure("2") do |config|
     k8s.vm.synced_folder "pki", "/etc/pki"
     k8s.vm.synced_folder File.expand_path("~/.kube"), "/root/.kube"
     k8s.vm.provider "virtualbox" do |v|
-      v.memory = 4096
+      v.memory = 8192
       v.cpus = 4
     end
+    k8s.disksize.size = '60GB'
   end
 
   config.vm.define "artifacts" do |artifacts|
@@ -60,10 +61,18 @@ Vagrant.configure("2") do |config|
   #  ci.vm.box = "ubuntu/xenial64"
   #  ci.vm.network "private_network", ip: "10.17.2.10"
   #  ci.vm.network "private_network", ip: "10.17.2.11"
+  #  ci.vm.network "private_network", ip: "10.17.2.12"
   #  ci.vm.synced_folder "var/ci/jenkins", "/var/lib/jenkins"
   #  ci.vm.synced_folder "var/ci/gitlab", "/var/lib/gitlab"
   #  ci.vm.synced_folder "etc/ci/gitlab", "/etc/gitlab"
   #  ci.vm.synced_folder "pki", "/etc/pki"
+  #  ci.vm.provision 'shell', path: "etc/common/provision-docker.sh"
+  #  ci.vm.provision "shell",
+  #    path: "etc/common/provision-ca.sh",
+  #    env: {
+  #      "PKI_DIR" => "/etc/pki",
+  #      "DEBIAN_FRONTEND" => "noninteractive"
+  #    }
   #end
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -81,6 +90,13 @@ Vagrant.configure("2") do |config|
       path: "etc/common/provision-ca.sh",
       env: {
         "PKI_DIR" => "/etc/pki",
+        "DEBIAN_FRONTEND" => "noninteractive"
+      }
+    rdbms.vm.provision "shell",
+      path: "etc/rdbms/mysql/provision.sh",
+      env: {
+        "PKI_DIR" => "/etc/pki",
+        "CONFIG_DIR" => "/vagrant/etc/rdbms/mysql",
         "DEBIAN_FRONTEND" => "noninteractive"
       }
   end

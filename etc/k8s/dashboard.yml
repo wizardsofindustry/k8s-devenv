@@ -123,6 +123,13 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
         image: k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1
         ports:
         - containerPort: 8443

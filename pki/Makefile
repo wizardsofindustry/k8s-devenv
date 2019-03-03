@@ -21,3 +21,7 @@ k8s.crt:
 	@openssl x509 -req -in k8s.csr -days 3650\
 		$(ROOT_CRT) $(ROOT_KEY) -set_serial 01 -out k8s.crt\
 		-extfile k8s.conf -extensions v3_req
+
+
+authorized_keys:
+	ssh-add -L > authorized_keys
